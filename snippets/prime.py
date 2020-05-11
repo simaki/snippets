@@ -4,6 +4,10 @@ def prime(n):
     """
     Return prime numbers <= n.
 
+    Complexity
+    ----------
+    O(n)
+
     Examples
     --------
     >>> prime(1)
@@ -17,14 +21,14 @@ def prime(n):
     is_prime[0] = False
     is_prime[1] = False
 
-    for i, p in enumerate(is_prime):
-        if p:
+    for i, isp in enumerate(is_prime):
+        if isp:
             k = 2
             while k * i <= n:
                 is_prime[k * i] = False
                 k += 1
 
-    return [i for i, p in enumerate(is_prime) if p]
+    return [i for i, isp in enumerate(is_prime) if isp]
 
 
 if __name__ == '__main__':
