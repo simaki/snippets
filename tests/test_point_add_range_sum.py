@@ -28,7 +28,7 @@ def solve(i):
     o = []
     for t, l, r in i[2:]:
         if t == 0:
-            st.update(l, r)
+            st.update(l, st.array[l] + r)
         else:
             o.append(st(l, r))
     return o

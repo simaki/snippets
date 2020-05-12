@@ -41,8 +41,11 @@ class _TestCaseMixin(metaclass=ABCMeta):
         with open(f_i) as f:
             i = cls.read_i(f)
         with open(f_o) as f:
-            o = cls.read_o(f)
-        assert cls.solve(i) == o
+            o_exp = cls.read_o(f)
+        o = cls.solver(i)
+        print(o)
+        print(o_exp)
+        assert o == o_exp
 
     @pytest.mark.parametrize('case', cases)
     def test(self, case):

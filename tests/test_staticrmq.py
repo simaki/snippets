@@ -33,9 +33,7 @@ def solve(i):
     >>> solve(i)
     [2, 2, 1, 1, 10, 1, 1, 1, 1, 100]
     """
-    n, q = i[0]
-    a = i[1]
-    st = SegmentTreeMin(a)
+    st = SegmentTreeMin(i[1])
     return [st(il, ir) for il, ir in i[2:]]
 
 
