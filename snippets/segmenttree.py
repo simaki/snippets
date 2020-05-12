@@ -1,7 +1,14 @@
+from abc import ABCMeta, abstractmethod
+from math import log2
 
 
-class SegmentTreeMin:
+class SegmentTree(metaclass=ABCMeta):
     """
+    Parameters
+    ----------
+    - array : list
+        Input array to evaluate range statistics.
+
     Attributes
     ----------
     - a : array
@@ -14,7 +21,89 @@ class SegmentTreeMin:
         Segment tree.
     - section : list of (int, int)
         Section of each vertex.
+    """
+    def __init__(self, array):
+        self.array = array
 
+        self.a = self.__get_a()
+        self.n_a = len(self.a)
+        self.n_t = 2 * self.n_a - 1
+        self.tree = self.__get_tree()
+        self.section = self.__get_section()
+
+    def parent(self, v):
+        return (v - 1) // 2
+
+    def childs(self, v):
+        return (2 * v + 1, 2 * v + 2)
+
+    def leaf(self, i):
+        return i + self.n_a - 1
+
+    def __get_a(self):
+        n = 2 ** (int(log2(len(self.array))) + 1)
+        return self.array + [
+            self.default() for _ in range(n - len(self.array))
+        ]
+
+    def __get_tree(self):
+        tree = [self.default() for _ in range(self.n_t)]
+
+        for i_tree in range(self.n_t - 1, -1, -1):
+            if i_tree >= self.n_a - 1:
+                tree[i_tree] = self.a[i_tree - self.n_a + 1]
+            else:
+                c0, c1 = self.childs(i_tree)
+                tree[i_tree] = self.stat([tree[c0], tree[c1]])
+
+        return tree
+
+    def __get_section(self):
+        section = [None for _ in range(self.n_t)]
+
+        for i_tree in range(self.n_t - 1, -1, -1):
+            if i_tree >= self.n_a - 1:
+                i = i_tree - self.n_a + 1
+                section[i_tree] = (i, i + 1)
+            else:
+                c0, c1 = self.childs(i_tree)
+                section[i_tree] = (section[c0][0], section[c1][1])
+
+        return section
+
+    def __call__(self, il, ir, v=0):
+        sl, sr = self.section[v]
+        if (ir <= sl) or (il >= sr):
+            return self.default()
+        elif il <= sl and sr <= ir:
+            return self.tree[v]
+        else:
+            c0, c1 = self.childs(v)
+            return self.stat([self(il, ir, c0), self(il, ir, c1)])
+
+    @abstractmethod
+    def stat(self, iterable):
+        """
+        Statistics value of an iterable.
+        """
+
+    @property
+    @abstractmethod
+    def default(self):
+        """
+        The default value satisfying `stat([default, x]) = x` for any x.
+        """
+
+    @abstractmethod
+    def update(self, i, a, v=None):
+        """
+        Update and return self.
+        """
+        return self
+
+
+class SegmentTreeMin(SegmentTree):
+    """
     Examples
     --------
     >>> array = [5, 3, 7, 9, 1, 4, 6, 2]
@@ -28,76 +117,57 @@ class SegmentTreeMin:
     >>> st.update(0, 2).tree
     [1, 2, 1, 2, 7, 1, 2, 2, 3, 7, 9, 1, 4, 6, 2]
     """
+    def stat(self, iterable):
+        return min(iterable)
 
-    inf = float('inf')
+    def default(self):
+        return float('inf')
 
-    def __init__(self, array):
-        self.array = array
+    def update(self, i, a, v=None):
+        if v is None:
+            v = self.leaf(i)
 
-        self.a = self._get_a()
-        self.n_a = len(self.a)
-        self.n_t = 2 * self.n_a - 1
-        self.tree = self._get_tree()
-        self.section = self._get_section()
+        self.tree[v] = self.stat([self.tree[v], a])
 
-    def _get_a(self):
-        k = 0
-        while 2 ** k < len(self.array):
-            k += 1
+        if v != 0:
+            return self.update(i, a, v=self.parent(v))
 
-        return self.array + [self.inf for _ in range(2 ** k - len(self.array))]
 
-    def _get_tree(self):
-        tree = [self.inf for _ in range(self.n_t)]
+class SegmentTreeMax(SegmentTree):
 
-        for i_tree in range(self.n_t - 1, -1, -1):
-            if i_tree >= self.n_a - 1:
-                tree[i_tree] = self.a[i_tree - self.n_a + 1]
-            else:
-                c0, c1 = self.childs(i_tree)
-                tree[i_tree] = min(tree[c0], tree[c1])
+    def stat(self, iterable):
+        return max(iterable)
 
-        return tree
+    def default(self):
+        return -float('inf')
 
-    def _get_section(self):
-        section = [None for _ in range(self.n_t)]
+    def update(self, i, a, v=None):
+        if v is None:
+            v = self.leaf(i)
 
-        for i_tree in range(self.n_t - 1, -1, -1):
-            if i_tree >= self.n_a - 1:
-                i = i_tree - self.n_a + 1
-                section[i_tree] = (i, i + 1)
-            else:
-                c0, c1 = self.childs(i_tree)
-                section[i_tree] = (section[c0][0], section[c1][1])
+        self.tree[v] = self.stat([self.tree[v], a])
 
-        return section
+        if v != 0:
+            return self.update(i, a, v=self.parent(v))
 
-    def min(self, il, ir, v=0):
-        """
-        Return min(array[il:ir]).
-        """
-        sl, sr = self.section[v]
-        if (ir <= sl) or (il >= sr):
-            return self.inf
-        elif il <= sl and sr <= ir:
-            return self.tree[v]
-        else:
-            c0, c1 = self.childs(v)
-            return min(self.min(il, ir, c0), self.min(il, ir, c1))
 
-    def childs(self, v):
-        return (2 * v + 1, 2 * v + 2)
+class SegmentTreeSum(SegmentTree):
 
-    def parent(self, v):
-        return (v - 1) // 2
+    def stat(self, iterable):
+        return sum(iterable)
 
-    def update(self, i, a):
-        v = i + self.n_a - 1
-        while v != 0:
-            self.tree[v] = min(self.tree[v], a)
-            v = self.parent(v)
+    def default(self):
+        return 0
 
-        return self
+    def update(self, i, a, v=None):
+        if v is None:
+            v = self.leaf(i)
+            self._diff = a - self.array[i]
+
+        self.tree[v] += self._diff
+
+        if v != 0:
+            return self.update(i, a, v=self.parent(v))
 
 
 if __name__ == '__main__':

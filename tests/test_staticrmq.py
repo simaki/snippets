@@ -33,7 +33,7 @@ def solve(i):
     n, q = i[0]
     a = i[1]
     st = SegmentTreeMin(a)
-    return [st.min(il, ir) for il, ir in i[2:]]
+    return [st(il, ir) for il, ir in i[2:]]
 
 
 def f_in_out():
