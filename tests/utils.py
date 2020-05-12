@@ -11,19 +11,14 @@ def collect_cases(directory, pattern_in, pattern_out):
     return list(zip(glob_i, glob_o))
 
 
-class TestCaseMixin(metaclass=ABCMeta):
+class _TestCaseMixin(metaclass=ABCMeta):
 
-    cases = collect_cases(
-        Path(dirname(__file__)) / 'library-checker-problems/datastructure/unionfind',
-        'in/*.in',
-        'out/*.out',
-    )
-
-    solver = lambda x: None
+    cases = []
+    solve = lambda x: None
 
     @classmethod
-    def solve(cls, i):
-        return cls.solver(i)
+    def solver(cls, i):
+        return cls.solve(i)
 
     @classmethod
     def read_i(cls, f):
@@ -38,16 +33,14 @@ class TestCaseMixin(metaclass=ABCMeta):
         """
 
     @classmethod
-    def _test_for_case(cls, f_in, f_out, f_a=None):
-        with open(f_in) as f:
+    def _test_for_case(cls, f_i, f_o):
+        with open(f_i) as f:
             i = cls.read_i(f)
-        with open(f_out) as f:
-            o_expected = cls.read_o(f)
-
-        assert cls.solve(i) == o_expected
+        with open(f_o) as f:
+            o = cls.read_o(f)
+        assert cls.solve(i) == o
 
     @pytest.mark.parametrize('case', cases)
     def test(self, case):
-        # f_in, f_out = case
         self._test_for_case(*case)
 

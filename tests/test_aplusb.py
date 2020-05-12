@@ -2,6 +2,7 @@ from os.path import dirname
 from pathlib import Path
 
 import pytest
+from .utils import collect_cases, _TestCaseMixin
 
 
 def solve(i):
@@ -16,28 +17,23 @@ def solve(i):
     return a + b
 
 
-def collect_cases():
+class TestCase(_TestCaseMixin):
+
     directory = Path(dirname(__file__)) / 'library-checker-problems/sample/aplusb/'
-    glob_i = sorted(directory.glob('in/*.in'))
-    glob_o = sorted(directory.glob('out/*.out'))
-    return list(zip(glob_i, glob_o))
+    pattern_in = 'in/*.in'
+    pattern_out = 'out/*.out'
 
-
-class TestCase:
-
+    cases = collect_cases(directory, pattern_in, pattern_out)
     solve = solve
-    cases = collect_cases()
 
     @classmethod
-    def _assert_case(cls, f_i, f_o):
-        with open(f_i) as f:
-            i = [int(j) for j in f.read().split()]
-        with open(f_o) as f:
-            o_expected = int(f.read().strip('\n'))
+    def read_i(cls, f):
+        return [int(i.strip('\n')) for i in f.read().split()]
 
-        assert cls.solve(i) == o_expected
+    @classmethod
+    def read_o(cls, f):
+        return int(f.read())
 
     @pytest.mark.parametrize('case', cases)
-    def test_case(self, case):
-        f_i, f_o = case
-        self._assert_case(f_i, f_o)
+    def test(self, case):
+        self._test_for_case(*case)

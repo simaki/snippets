@@ -7,6 +7,7 @@ from snippets import UnionFind
 from .utils import collect_cases, TestCaseMixin
 
 
+
 def solve(i):
     """
     Examples

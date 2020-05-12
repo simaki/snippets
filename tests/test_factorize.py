@@ -2,6 +2,7 @@ from os.path import dirname
 from pathlib import Path
 
 import pytest
+from .utils import collect_cases, _TestCaseMixin
 
 from snippets import prime_factorization
 
@@ -24,45 +25,33 @@ def solve(i):
     [2, 3, 3]
     [2, 2, 5]
     """
-    q = i[0]
-
     o = []
     for n in i[1:]:
         dict_p = prime_factorization(n)
-        n_p = sum([power for power in dict_p.values()])
-        line = [n_p]
+        line = [sum(dict_p.values())]
         for p, power in dict_p.items():
             line += [p] * power
         o.append(line)
     return o
 
 
-def f_in_out():
-    cases = Path(dirname(__file__)) / 'library-checker-problems/math/factorize/'
-    f = []
-    for f_in, f_out in zip(sorted(cases.glob('in/small_*.in')), sorted(cases.glob('out/small_*.out'))):
-        f.append([f_in, f_out])
-    return f
+class TestCase(_TestCaseMixin):
 
+    directory =  Path(dirname(__file__)) / 'library-checker-problems/math/factorize/'
+    pattern_in = 'in/small_*.in'
+    pattern_out = 'out/small_*.out'
 
-f = f_in_out()
-
-
-class TestSolve:
-
+    cases = collect_cases(directory, pattern_in, pattern_out)
     solve = solve
 
     @classmethod
-    def _test_for_case(cls, f_in, f_out, f_a=None):
-        with open(f_in) as f:
-            i = [int(line) for line in f.readlines()]
-        with open(f_out) as f:
-            o_expected = [list(map(int, line.split())) for line in f.readlines()]
+    def read_i(cls, f):
+        return [int(line) for line in f.readlines()]
 
-        assert cls.solve(i) == o_expected
+    @classmethod
+    def read_o(cls, f):
+        return [list(map(int, line.split())) for line in f.readlines()]
 
-    @pytest.mark.parametrize('f', f)
-    def test(self, f):
-        f_in, f_out = f
-        self._test_for_case(f_in, f_out)
-
+    @pytest.mark.parametrize('case', cases)
+    def test(self, case):
+        self._test_for_case(*case)

@@ -2,6 +2,7 @@ from os.path import dirname
 from pathlib import Path
 
 import pytest
+from .utils import collect_cases, _TestCaseMixin
 
 from snippets import prime
 
@@ -18,29 +19,23 @@ def solve(i):
     return len(prime(i))
 
 
-def collect_cases():
+class TestCase(_TestCaseMixin):
+
     directory = Path(dirname(__file__)) / 'library-checker-problems/math/counting_primes'
-    glob_i = sorted(directory.glob('in/small_*.in'))
-    glob_o = sorted(directory.glob('out/small_*.out'))
-    return list(zip(glob_i, glob_o))
+    pattern_in = 'in/small_*.in'
+    pattern_out = 'out/small_*.out'
 
-
-class TestSolve:
-
+    cases = collect_cases(directory, pattern_in, pattern_out)
     solve = solve
-    cases = collect_cases()
 
     @classmethod
-    def _assert_case(cls, f_i, f_o):
-        with open(f_i) as f:
-            i = int(f.read())
-        with open(f_o) as f:
-            o_expected = int(f.read())
+    def read_i(cls, f):
+        return int(f.read())
 
-        assert cls.solve(i) == o_expected
+    @classmethod
+    def read_o(cls, f):
+        return int(f.read())
 
     @pytest.mark.parametrize('case', cases)
-    def test_case(self, case):
-        f_i, f_o = case
-        self._assert_case(f_i, f_o)
-
+    def test(self, case):
+        self._test_for_case(*case)

@@ -2,6 +2,7 @@ from os.path import dirname
 from pathlib import Path
 
 import pytest
+from .utils import collect_cases, _TestCaseMixin
 
 from snippets import prime
 
@@ -22,29 +23,23 @@ def solve(i):
     return [[pi, x], p[b::a]]
 
 
-def collect_cases():
+class TestCase(_TestCaseMixin):
+
     directory = Path(dirname(__file__)) / 'library-checker-problems/math/enumerate_primes'
-    glob_i = sorted(directory.glob('in/example_*.in'))
-    glob_o = sorted(directory.glob('out/example_*.out'))
-    return list(zip(glob_i, glob_o))
+    pattern_in = 'in/example_*.in'
+    pattern_out = 'out/example_*.out'
 
-
-
-class TestSolve:
-
+    cases = collect_cases(directory, pattern_in, pattern_out)
     solve = solve
-    cases = collect_cases()
 
     @classmethod
-    def _assert_case(cls, f_i, f_o):
-        with open(f_i) as f:
-            i = [int(line) for line in f.read().split()]
-        with open(f_o) as f:
-            o_expected = [list(map(int, line.split())) for line in f.readlines()]
+    def read_i(cls, f):
+        return [int(line) for line in f.read().split()]
 
-        assert cls.solve(i) == o_expected
+    @classmethod
+    def read_o(cls, f):
+        return [list(map(int, line.split())) for line in f.readlines()]
 
     @pytest.mark.parametrize('case', cases)
-    def test_case(self, case):
-        f_i, f_o = case
-        self._assert_case(f_i, f_o)
+    def test(self, case):
+        self._test_for_case(*case)
