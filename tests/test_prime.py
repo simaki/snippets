@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from snippets import prime
+# from snippets import prime
 
 
 def solve(i):
@@ -18,6 +18,7 @@ def solve(i):
     return len(prime(i))
 
 
+@pytest.fixture
 def f_in_out():
     cases = Path(dirname(__file__)) / 'library-checker-problems/math/counting_primes/'
     f = []
@@ -25,8 +26,6 @@ def f_in_out():
         f.append([f_in, f_out])
     return f
 
-
-f = f_in_out()
 
 
 class TestSolve:
@@ -42,8 +41,8 @@ class TestSolve:
 
         assert cls.solve(i) == o_expected
 
-    @pytest.mark.parametrize('f', f)
-    def test(self, f):
-        f_in, f_out = f
+    @pytest.mark.parametrize('f_in_out', f_in_out)
+    def test(self, f_in_out):
+        f_in, f_out = f_in_out
         self._test_for_case(f_in, f_out)
 
