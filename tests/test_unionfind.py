@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from snippets import UnionFind
+from .utils import collect_cases, TestCaseMixin
 
 
 def solve(i):
@@ -37,32 +38,19 @@ def solve(i):
     return o
 
 
-def f_in_out():
-    cases = Path(dirname(__file__)) / 'library-checker-problems/datastructure/unionfind/'
-    f = []
-    for f_in, f_out in zip(sorted(cases.glob('in/*.in')), sorted(cases.glob('out/*.out'))):
-        f.append([f_in, f_out])
-    return f
+class TestCase(TestCaseMixin):
 
+    directory = Path(dirname(__file__)) / 'library-checker-problems/datastructure/unionfind'
+    pattern_in = 'in/*.in'
+    pattern_out = 'out/*.out'
 
-f = f_in_out()
-
-
-class TestSolve:
-
-    solve = solve
+    cases = collect_cases(directory, pattern_in, pattern_out)
+    solver = solve
 
     @classmethod
-    def _test_for_case(cls, f_in, f_out, f_a=None):
-        with open(f_in) as f:
-            i = [list(map(int, line.split())) for line in f.readlines()]
-        with open(f_out) as f:
-            o_expected = [int(line) for line in f.readlines()]
+    def read_i(cls, f):
+        return [list(map(int, line.split())) for line in f.readlines()]
 
-        assert cls.solve(i) == o_expected
-
-    @pytest.mark.parametrize('f', f)
-    def test(self, f):
-        f_in, f_out = f
-        self._test_for_case(f_in, f_out)
-
+    @classmethod
+    def read_o(cls, f):
+        return [int(line) for line in f.readlines()]
