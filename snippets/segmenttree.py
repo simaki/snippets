@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from math import log2
+from math import log2, ceil
 
 
 class SegmentTree(metaclass=ABCMeta):
@@ -41,7 +41,7 @@ class SegmentTree(metaclass=ABCMeta):
         return i + self.n_a - 1
 
     def __get_a(self):
-        n = 2 ** (int(log2(len(self.array))) + 1)
+        n = 2 ** ceil(log2(len(self.array)))
         return self.array + [
             self.default() for _ in range(n - len(self.array))
         ]
@@ -99,7 +99,6 @@ class SegmentTree(metaclass=ABCMeta):
         """
         Update and return self.
         """
-        return self
 
 
 class SegmentTreeMin(SegmentTree):
@@ -110,9 +109,9 @@ class SegmentTreeMin(SegmentTree):
     >>> st = SegmentTreeMin(array)
     >>> st.tree
     [1, 3, 1, 3, 7, 1, 2, 5, 3, 7, 9, 1, 4, 6, 2]
-    >>> st.min(0, 1)
+    >>> st(0, 1)
     5
-    >>> st.min(0, 7)
+    >>> st(0, 7)
     1
     >>> st.update(0, 2).tree
     [1, 2, 1, 2, 7, 1, 2, 2, 3, 7, 9, 1, 4, 6, 2]
@@ -125,12 +124,16 @@ class SegmentTreeMin(SegmentTree):
 
     def update(self, i, a, v=None):
         if v is None:
+            self.array[i] = a
+            self.a[i] = a
             v = self.leaf(i)
 
         self.tree[v] = self.stat([self.tree[v], a])
 
         if v != 0:
             return self.update(i, a, v=self.parent(v))
+        else:
+            return self
 
 
 class SegmentTreeMax(SegmentTree):
@@ -143,12 +146,16 @@ class SegmentTreeMax(SegmentTree):
 
     def update(self, i, a, v=None):
         if v is None:
+            self.array[i] = a
+            self.a[i] = a
             v = self.leaf(i)
 
         self.tree[v] = self.stat([self.tree[v], a])
 
         if v != 0:
             return self.update(i, a, v=self.parent(v))
+        else:
+            return self
 
 
 class SegmentTreeSum(SegmentTree):
@@ -163,11 +170,15 @@ class SegmentTreeSum(SegmentTree):
         if v is None:
             v = self.leaf(i)
             self._diff = a - self.array[i]
+            self.array[i] += self._diff
+            self.a[i] += self._diff
 
         self.tree[v] += self._diff
 
         if v != 0:
             return self.update(i, a, v=self.parent(v))
+        else:
+            return self
 
 
 if __name__ == '__main__':
