@@ -2,10 +2,14 @@ from os.path import dirname
 from pathlib import Path
 
 import pytest
+from .utils import collect_cases, _TestCaseMixin
 
 from snippets import UnionFind
-from .utils import collect_cases, TestCaseMixin
 
+
+directory = Path(dirname(__file__)) / 'library-checker-problems/datastructure/unionfind'
+pattern_in = 'in/*.in'
+pattern_out = 'out/*.out'
 
 
 def solve(i):
@@ -25,9 +29,7 @@ def solve(i):
     >>> solve(i)
     [0, 1, 0, 1]
     """
-    n, q = i[0]
-
-    uf = UnionFind(n)
+    uf = UnionFind(i[0][0])
 
     o = []
     for t, u, v in i[1:]:
@@ -39,14 +41,10 @@ def solve(i):
     return o
 
 
-class TestCase(TestCaseMixin):
-
-    directory = Path(dirname(__file__)) / 'library-checker-problems/datastructure/unionfind'
-    pattern_in = 'in/*.in'
-    pattern_out = 'out/*.out'
+class TestCase(_TestCaseMixin):
 
     cases = collect_cases(directory, pattern_in, pattern_out)
-    solver = solve
+    solve = solve
 
     @classmethod
     def read_i(cls, f):
@@ -54,4 +52,8 @@ class TestCase(TestCaseMixin):
 
     @classmethod
     def read_o(cls, f):
-        return [int(line) for line in f.readlines()]
+        return list(map(int, f.read().split()))
+
+    @pytest.mark.parametrize('case', cases)
+    def test(self, case):
+        self._test_for_case(*case)

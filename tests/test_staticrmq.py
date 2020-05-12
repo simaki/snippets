@@ -1,12 +1,15 @@
-"""
-Segment Tree
-"""
 from os.path import dirname
 from pathlib import Path
 
 import pytest
 
 from snippets import SegmentTreeMin
+from .utils import collect_cases, _TestCaseMixin
+
+
+directory = Path(dirname(__file__)) / 'library-checker-problems/datastructure/staticrmq/'
+pattern_in = 'in/small_*.in'
+pattern_out = 'out/small_*.out'
 
 
 def solve(i):
@@ -36,32 +39,19 @@ def solve(i):
     return [st(il, ir) for il, ir in i[2:]]
 
 
-def f_in_out():
-    cases = Path(dirname(__file__)) / 'library-checker-problems/datastructure/staticrmq/'
-    f = []
-    for f_in, f_out in zip(sorted(cases.glob('in/small_*.in')), sorted(cases.glob('out/small_*.out'))):
-        f.append([f_in, f_out])
-    return f
+class TestCase(_TestCaseMixin):
 
-
-f = f_in_out()
-
-
-class TestSolve:
-
+    cases = collect_cases(directory, pattern_in, pattern_out)
     solve = solve
 
     @classmethod
-    def _test_for_case(cls, f_in, f_out, f_a=None):
-        with open(f_in) as f:
-            i = [list(map(int, line.split())) for line in f.readlines()]
-        with open(f_out) as f:
-            o_expected = [int(line) for line in f.readlines()]
+    def read_i(cls, f):
+        return [list(map(int, line.split())) for line in f.readlines()]
 
-        assert cls.solve(i) == o_expected
+    @classmethod
+    def read_o(cls, f):
+        return [int(line) for line in f.readlines()]
 
-    @pytest.mark.parametrize('f', f)
-    def test(self, f):
-        f_in, f_out = f
-        self._test_for_case(f_in, f_out)
-
+    @pytest.mark.parametrize('case', cases)
+    def test(self, case):
+        self._test_for_case(*case)

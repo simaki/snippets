@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from snippets import SegmentTreeSum
+from .utils import collect_cases, _TestCaseMixin
 
 
 def solve(i):
@@ -33,55 +34,23 @@ def solve(i):
     return o
 
 
-def collect_cases():
-    directory = Path(dirname(__file__)) / 'library-checker-problems/datastructure/point_add_range_sum'
-    glob_i = sorted(directory.glob('in/small_*.in'))
-    glob_o = sorted(directory.glob('out/small_*.out'))
-    return list(zip(glob_i, glob_o))
+class TestCase(_TestCaseMixin):
 
+    directory = Path(dirname(__file__)) / 'library-checker-problems/datastructure/point_add_range_sum/'
+    pattern_in = 'in/small_*.in'
+    pattern_out = 'out/small_*.out'
 
-class TestSolve:
-
+    cases = collect_cases(directory, pattern_in, pattern_out)
     solve = solve
-    cases = collect_cases()
 
     @classmethod
-    def _assert_case(cls, f_i, f_o):
-        with open(f_i) as f:
-            i = int(f.read())
-        with open(f_o) as f:
-            o_expected = int(f.read())
-
-        assert cls.solve(i) == o_expected
-
-    @pytest.mark.parametrize('case', cases)
-    def test_case(self, case):
-        f_i, f_o = case
-        self._assert_case(f_i, f_o)
-
-
-class TestCase:
-
-    solve = solve
-    cases = collect_cases()
-
-    def read_i(f):
+    def read_i(cls, f):
         return [list(map(int, line.split())) for line in f.readlines()]
 
-    def read_o(f):
-        return [int(line) for line in f.readlines()]
-
     @classmethod
-    def _test_for_case(cls, f_in, f_out, f_a=None):
-        with open(f_in) as f:
-            i = [list(map(int, line.split())) for line in f.readlines()]
-        with open(f_out) as f:
-            o_expected = [int(line) for line in f.readlines()]
-
-        assert cls.solve(i) == o_expected
+    def read_o(cls, f):
+        return list(map(int, f.read().split()))
 
     @pytest.mark.parametrize('case', cases)
     def test(self, case):
-        f_in, f_out = case
-        self._test_for_case(f_in, f_out)
-
+        self._test_for_case(*case)

@@ -11,10 +11,14 @@ def collect_cases(directory, pattern_in, pattern_out):
     return list(zip(glob_i, glob_o))
 
 
+def not_implemented(*arg):
+    raise NotImplementedError('Solver is not implemented')
+
+
 class _TestCaseMixin(metaclass=ABCMeta):
 
     cases = []
-    solve = lambda x: None
+    solve = not_implemented
 
     @classmethod
     def solver(cls, i):

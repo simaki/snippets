@@ -4,6 +4,12 @@ from pathlib import Path
 import pytest
 
 from snippets import RangeSum
+from .utils import collect_cases, _TestCaseMixin
+
+
+directory = Path(dirname(__file__)) / 'library-checker-problems/datastructure/static_range_sum/'
+pattern_in = 'in/example_*.in'
+pattern_out = 'out/example_*.out'
 
 
 def solve(i):
@@ -29,29 +35,19 @@ def solve(i):
     return [rs(il, ir) for il, ir in i[2:]]
 
 
-def collect_cases():
-    directory = Path(dirname(__file__)) / 'library-checker-problems/datastructure/static_range_sum/'
-    glob_i = sorted(directory.glob('in/*.in'))
-    glob_o = sorted(directory.glob('out/*.out'))
-    return list(zip(glob_i, glob_o))
+class TestCase(_TestCaseMixin):
 
-
-
-class TestSolve:
-
+    cases = collect_cases(directory, pattern_in, pattern_out)
     solve = solve
-    cases = collect_cases()
 
     @classmethod
-    def _assert_case(cls, f_i, f_o):
-        with open(f_i) as f:
-            i = [list(map(int, line.split())) for line in f.readlines()]
-        with open(f_o) as f:
-            o_expected = [int(line) for line in f.readlines()]
+    def read_i(cls, f):
+        return [list(map(int, line.split())) for line in f.readlines()]
 
-        assert cls.solve(i) == o_expected
+    @classmethod
+    def read_o(cls, f):
+        return [int(line) for line in f.readlines()]
 
     @pytest.mark.parametrize('case', cases)
-    def test_case(self, case):
-        f_i, f_o = case
-        self._assert_case(f_i, f_o)
+    def test(self, case):
+        self._test_for_case(*case)

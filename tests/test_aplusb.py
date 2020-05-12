@@ -28,7 +28,7 @@ class TestCase(_TestCaseMixin):
 
     @classmethod
     def read_i(cls, f):
-        return [int(i.strip('\n')) for i in f.read().split()]
+        return [int(i) for i in f.read().split()]
 
     @classmethod
     def read_o(cls, f):
