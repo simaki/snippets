@@ -19,6 +19,7 @@ class Graph:
     >>> we = [5, 3, 2, 10, 7, 5, 1]
     >>> graph = Graph(n, e, we=we)
     """
+
     def __init__(self, n, e, wv=None, we=None):
         self.n = n
         self.e = list(map(tuple, e))
@@ -60,7 +61,7 @@ def dijkstra(graph, s):
     >>> dijkstra(graph, 2)[0][3]
     11
     """
-    INF = float('inf')
+    INF = float("inf")
 
     d = [INF for _ in range(graph.n)]
     d[s] = 0
@@ -81,7 +82,57 @@ def dijkstra(graph, s):
     return d, prev
 
 
-if __name__ == '__main__':
+def bridge(n, e):
+    """
+    undirected
+
+    Examples
+    --------
+    >>> n = 5
+    >>> e = [
+    ...     (0, 1),
+    ...     (1, 2),
+    ...     (2, 3),
+    ...     (3, 4),
+    ...     (2, 4),
+    ... ]
+    >>> bridge(n, e)
+    [(0, 1), (1, 2)]
+    """
+    neighbors = [[] for _ in range(n)]
+
+    for v0, v1 in e:
+        neighbors[v0].append(v1)
+        neighbors[v1].append(v0)
+
+    pre = [None] * n  # also works as visited flag
+    low = [None] * n  # lowest `pre` in children
+    par = [None] * n  # parent
+    i = 0
+
+    def get(v0):
+        nonlocal i
+        pre[v0] = i
+        low[v0] = i
+        i += 1
+        for v1 in neighbors[v0]:
+            par[v1] = v0
+            if pre[v1] is None:
+                get(v1)
+                low[v0] = min(low[v0], low[v1])
+            elif v1 != par[v0]:
+                low[v0] = min(low[v0], pre[v1])
+
+    get(0)
+
+    bridges = []
+    for v0, v1 in e:
+        if pre[v0] < low[v1] or pre[v1] < low[v0]:
+            bridges.append((v0, v1))
+    return bridges
+
+
+if __name__ == "__main__":
     from doctest import testmod
 
     testmod()
